@@ -56,7 +56,7 @@ pipeline {
                   branch 'master'
                }}
                steps {
-                   bat 'cmake -B build -S spike'
+                   echo 'cmake -B build -S spike'
                }
             }
             stage('Docker') {
