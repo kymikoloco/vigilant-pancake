@@ -29,9 +29,8 @@ pipeline {
                   [$class: 'CloneOption', depth: 50, honorRefspec: true, noTags: true, reference: '', shallow: true], 
                   [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false],
                   [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
-                     [path: 'spike'], 
-                     [path: '*']]
-                     ]
+                     [path: 'spike']
+                     ]]
                ], 
                submoduleCfg: [], 
                userRemoteConfigs: [[
