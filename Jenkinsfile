@@ -8,8 +8,21 @@ def isBuildAReplay() {
   return currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')
 }
 
+// Compute
+def customWorkspaceCompute() {
+   def numberPostfix = /[-_]\d/
+   def workspace = env.BRANCH_NAME.replace("/","%2F")
+   workspace = worspace.replace(numberPostfix, '')
+   return workspace
+}
+
 pipeline {
-   agent any
+   agent {
+      node {
+         label "!master"
+         customWorkspace customWorkspaceCompute()
+      }
+   }
 
    options {
       skipDefaultCheckout true
@@ -22,21 +35,15 @@ pipeline {
         steps {
          checkout(
                [$class: 'GitSCM', 
-               branches: [[name: '**']], 
-               // browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/kymikoloco/vigilant-pancake'], 
-               doGenerateSubmoduleConfigurations: false, 
-               extensions: [
-                  [$class: 'CloneOption', depth: 50, honorRefspec: true, noTags: true, reference: '', shallow: true], 
-                  [$class: 'SubmoduleOption', disableSubmodules: false, parentCredentials: true, recursiveSubmodules: true, reference: '', trackingSubmodules: false],
+               branches: scm.branches, 
+               extensions: scm.extensions + [
                   [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                      [path: '.github']
-                     ]]
-               ], 
-               submoduleCfg: [], 
-               userRemoteConfigs: [[
-                  // refspec: '"+refs/heads/*:refs/remotes/origin/*"', 
-                  url: 'https://github.com/kymikoloco/vigilant-pancake', 
-                  credentialsId: 'github_token']]]
+                     ],
+                     ]
+               ],
+               userRemoteConfigs: scm.userRemoteConfigs
+               ]
             )
 
             sh 'env'
