@@ -11,23 +11,13 @@ def isBuildAReplay() {
 // Compute the custom workspace to use
 def customWorkspaceCompute() {
    
-   node {
-      def numberPostfix = /[-_]\d$/
-
-   // def workspaceRoot = path[0..<-1].join(File.separator)
-   // def currentWs = path[-1]
-
-   String newWorkspace = env.JOB_NAME.replace('/', '_')
-   newWorkspace = newWorkspace.replace('%2f', '_')
-   newWorkspace = newWorkspace.replace('%2F', '_')
-   newWorkspace = newWorkspace.replace(numberPostfix, '')
-   // if (currentWs =~ '@') 
-   // {
-   //    newWorkspace = "${newWorkspace}@${currentWs.split('@')[-1]}"
-   // }
+   def newWorkspace = env.JOB_NAME
+   // Replace the %2F from git branch name replacement
+   newWorkspace = newWorkspace.replaceAll(~/(?i)%2f/, '_')
+   // Replace any suffix of -1, _1, _2, etc
+   newWorkspace = newWorkspace.replaceAll(~/[-_]\d$/, '')
 
    return newWorkspace
-   }
 }
 
 pipeline {
@@ -40,7 +30,7 @@ pipeline {
       // quietPeriod, rateLimitBuilds, retry, script, skipDefaultCheckout, skipStagesAfterUnstable, 
       // timeout, timestamps, waitUntil, warnError, withContext, withCredentials, withEnv, ws]
       skipDefaultCheckout true
-      ws("testing")
+      ws("workspace/" + customWorkspaceCompute())
 
       // 3 minute quiet period to see if a push has anything following it.
       quietPeriod 180
