@@ -14,15 +14,13 @@ def customWorkspaceCompute() {
    node {
       def numberPostfix = /[-_]\d$/
 
-   path = path.split(Pattern.quote(File.separator))
-
    // def workspaceRoot = path[0..<-1].join(File.separator)
    // def currentWs = path[-1]
 
    String newWorkspace = env.JOB_NAME.replace('/', '_')
    newWorkspace = newWorkspace.replace('%2f', '_')
    newWorkspace = newWorkspace.replace('%2F', '_')
-   def newWorkspace = newWorkspace.replace(numberPostfix, '')
+   newWorkspace = newWorkspace.replace(numberPostfix, '')
    // if (currentWs =~ '@') 
    // {
    //    newWorkspace = "${newWorkspace}@${currentWs.split('@')[-1]}"
@@ -42,7 +40,7 @@ pipeline {
       // quietPeriod, rateLimitBuilds, retry, script, skipDefaultCheckout, skipStagesAfterUnstable, 
       // timeout, timestamps, waitUntil, warnError, withContext, withCredentials, withEnv, ws]
       skipDefaultCheckout true
-      //ws("${env.JOB_NAME}")
+      ws("testing")
 
       // 3 minute quiet period to see if a push has anything following it.
       quietPeriod 180
