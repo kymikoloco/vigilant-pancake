@@ -17,7 +17,7 @@ def customWorkspaceCompute() {
    // Replace any suffix of -1, _1, _2, etc
    newWorkspace = newWorkspace.replaceAll(~/[-_]\d$/, '')
 
-   return newWorkspace
+   return newWorkspace ?: "customWorkspace"
 }
 
 pipeline {
@@ -51,7 +51,7 @@ pipeline {
                ]
             )
 
-            sh 'env'
+            sh 'env | sort'
             script {
                echo "Triggering job for branch ${env.BRANCH_NAME}"
                GIT_BRANCH=env.BRANCH_NAME.replace("/","%2F")
