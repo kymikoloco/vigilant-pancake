@@ -19,9 +19,17 @@ def customWorkspaceCompute() {
 
    return newWorkspace ?: "customWorkspace"
 }
-
+def ccacheCheck() {
+   if( env.TAG_NAME_A ) {
+      return 1
+   }
+   return 0
+}
 pipeline {
    agent any
+   environment {
+      TAG_NAME_A = "testing"
+   }
 
    options {
       // [buildDiscarder, catchError, checkoutToSubdirectory, 
@@ -37,6 +45,9 @@ pipeline {
    }
    stages {
       stage('Set Params') {  
+         environment{
+            CCACHE_DISABLE = ccacheCheck()
+         }
         steps {
          checkout(
                [$class: 'GitSCM', 
