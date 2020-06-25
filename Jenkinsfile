@@ -20,15 +20,15 @@ def customWorkspaceCompute() {
    return newWorkspace ?: "customWorkspace"
 }
 def ccacheCheck() {
-   if( env.TAG_NAME_A ) {
+   if( env.TAG_NAME ) {
       return 1
    }
    return 0
 }
 pipeline {
    agent any
-   environment {
-      TAG_NAME_A = "testing"
+   environment{
+      CCACHE_DISABLE = ccacheCheck()
    }
 
    options {
@@ -45,9 +45,6 @@ pipeline {
    }
    stages {
       stage('Set Params') {  
-         environment{
-            CCACHE_DISABLE = ccacheCheck()
-         }
         steps {
          checkout(
                [$class: 'GitSCM', 
