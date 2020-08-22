@@ -1,101 +1,81 @@
-def GIT_BRANCH=''
-
-def isBuildAReplay() {
-  // https://stackoverflow.com/questions/51555910/how-to-know-inside-jenkinsfile-script-that-current-build-is-an-replay/52302879#52302879
-  // https://stackoverflow.com/questions/43597803/how-to-differentiate-build-triggers-in-jenkins-pipeline
-  // Can also be caused by:
-  // org.jenkinsci.plugins.workflow.cps.replay.ReplayCause
-  return currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')
+def TEST_VER='2020.1'
+def builtImage;
+@NonCPS
+def printParams() {
+    def _text = ""
+    env.getOverriddenEnvironment().each { name, value ->  println "$name=$value" }
+    env.getOverriddenEnvironment().each { name, value ->  _text += "$name=$value\n" }
+    writeFile(file="test-vals.env", text=_text)
 }
-
-// Compute
-def customWorkspaceCompute() {
-   def numberPostfix = /[-_]\d/
-   def workspace = env.BRANCH_NAME.replace("/","%2F")
-   workspace = worspace.replace(numberPostfix, '')
-   return workspace
-}
-
-pipeline {
-   agent {
-      node {
-         label "!master"
-         customWorkspace customWorkspaceCompute()
-      }
-   }
-
-   options {
-      skipDefaultCheckout true
-
-      // 3 minute quiet period to see if a push has anything following it.
-      quietPeriod 180
-   }
-   stages {
-      stage('Set Params') {  
-        steps {
-         checkout(
-               [$class: 'GitSCM', 
-               branches: scm.branches, 
-               extensions: scm.extensions + [
-                  [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
-                     [path: '.github']
-                     ],
-                     ]
-               ],
-               userRemoteConfigs: scm.userRemoteConfigs
-               ]
-            )
-
-            sh 'env'
-            script {
-               echo "Triggering job for branch ${env.BRANCH_NAME}"
-               GIT_BRANCH=env.BRANCH_NAME.replace("/","%2F")
+pipeline{
+    agent { label 'model_i' }
+    parameters {
+        booleanParam(name: 'QUICK_BUILD', defaultValue: false,
+            description: 'Skip running git clean and perform a quick build' )
+    }
+    environment {
+        TEST_VER="${TEST_VER}"
+        VIVARIUM="/tools/pancake"
+        USER="cmake"
+        PATH="/opt/cmake/bin:$PATH"
+    }
+    stages {
+        stage('Clean') {
+            when { not {expression { return params.QUICK_BUILD } } }
+            steps {
+                bat 'git clean -xffd ./'
             }
-         }
-      }
-      stage('Changeset test') {
-         parallel {
-            stage('Changeset') {
-               when { anyOf {
-                  changeset "spike/**"
-                  changeset "Jenkinsfile"
-                  expression { env.BUILD_NUMBER == '1' || isBuildAReplay() }
-                  branch 'master'
-               }}
-               steps {
-                   echo 'cmake -B build -S spike'
-               }
-            }
-            stage('Docker') {
-               when { anyOf {
-                  changeset "Dockerfile"
-                  expression { env.BUILD_NUMBER == '1' || isBuildAReplay() }
-                  branch 'master'
-               }
-               }
-               steps {
-                  echo 'testing'
-               }
-            }
-            
-         }
-         post {
-            failure {
-               postFailure()
-            }
-         }
-      }
-   }
-}
-
-def postFailure() {
-    script {
-        if ((env.BRANCH_NAME.equals('master'))
-                || (env.BRANCH_NAME.toUpperCase().startsWith('LTS'))) {
-            slackSend baseUrl: 'https://luminartech.slack.com/services/hooks/jenkins-ci/',
-                botUser: true, channel: '#cicd-model-i-notifications',
-                message: "Build failed!\n<${env.BUILD_URL}|${env.JOB_NAME} ${env.BUILD_NUMBER}>",
-                tokenCredentialId: 'stash_notification_token'
         }
+        stage("Dockerfile build") {
+            steps { script {
+                docker.withRegistry("https://index.docker.io/", "dockerhub") {
+                    // Build the image. It's probably already built, but just check
+                    //builtImage = docker.build('cmake_image', "-f ./Dockerfile ." )
+                    builtImage = docker.image("cmake_image")
+
+                    // Also tag with the git commit
+                    builtImage.tag("${env.GIT_COMMIT}")
+                }
+
+            } }
+        }
+
+        // Synthesis must run first
+        stage('Synthesis') {
+            steps {
+                printParams()
+                // Run in a custom docker
+                bat script: "docker run --env-file test-vals.env -v ${env.WORKSPACE}:/src --workdir /src ${builtImage.id} /opt/cmake/bin/cmake -Bbuild -S spike && /opt/cmake/bin/cmake --build build", label: 'Run `make` in custom mounted folder'
+
+            }
+        }
+        stage('Additional') {
+            agent {
+                docker {
+                    image "${builtImage.id}"
+                    // Reuses the node specified at the top of the pipeline
+                    reuseNode true
+                }
+            }
+
+            stages {
+            stage('Compilation') {
+                parallel {
+                    stage('stuff') {
+                        steps {
+                           sh 'echo doing stuff'
+                           sh 'env'
+                        }
+                    }
+                    stage('stuff 2 ') {
+                        steps {
+                           sh 'echo doing stuff'
+                           sh 'env'
+                        }
+                    }
+                }
+            }
+
+        }}
     }
 }
