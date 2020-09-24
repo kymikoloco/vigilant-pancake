@@ -1,3 +1,7 @@
+@NonCPS
+def makeEnvAvailable() {
+  env.getEnvironment().each { k,v -> env.setProperty(k, v)  }
+}
 
 def builtImage;
 pipeline{
@@ -23,11 +27,10 @@ pipeline{
         stage("Dockerfile build") {
             steps { script {
                 env.THIS_IS_A_TEST = "test_env_set"
-                ANOTHER_TEST = "not_env_set"
+                env.ANOTHER_TEST = "not_env_set"
                 QUICK_BUILD = "not_actually_modifying_params"
                 env.GIT_COMMIT = env.GIT_COMMIT
-
-                // githubNotify account: 'kymikoloco', context: 'ci-vivarium', credentialsId: 'github_creds', description: 'This is an example thing', repo: 'vigilant-pancake', sha: '894bb4b01d7035ff9a6814b02152ac106571c611', status: 'SUCCESS', targetUrl: 'https://luminartech.jfrog.io/ui/builds/matlab-resim%20::%20PR-45'
+                makeEnvAvailable()
 
                 docker.withRegistry("https://index.docker.io/", "dockerhub") {
                     // Build the image. It's probably already built, but just check
