@@ -45,6 +45,7 @@ pipeline{
             steps {
                 script {
                     withEnv(["FOO=newbar"]) {
+                        bat 'set'
                         echo currentBuild.buildVariables
                     }
                 }
