@@ -18,13 +18,13 @@ pipeline{
         PATH="/opt/cmake/bin:$PATH"
     }
     stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    checkout(scm).each { k,v -> env.setProperty(k, v) }
-                }
-            }
-        }
+        // stage('Checkout') {
+        //     steps {
+        //         script {
+        //             checkout(scm).each { k,v -> env.setProperty(k, v) }
+        //         }
+        //     }
+        // }
         stage('Clean') {
             when { not {expression { return params.QUICK_BUILD } } }
             steps {
