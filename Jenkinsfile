@@ -1,7 +1,4 @@
-@NonCPS
-def makeEnvAvailable() {
-  env.getEnvironment().each { k,v -> env.setProperty(k, v)  }
-}
+@Library('JenkinsLib') _
 
 def builtImage;
 pipeline{
@@ -27,7 +24,7 @@ pipeline{
         stage("Dockerfile build") {
             steps { script {
                 env.THIS_IS_A_TEST = "test_env_set"
-                env.ANOTHER_TEST = "not_env_set"
+                ANOTHER_TEST = "not_env_set"
                 QUICK_BUILD = "not_actually_modifying_params"
                 env.GIT_COMMIT = env.GIT_COMMIT
                 makeEnvAvailable()
