@@ -1,5 +1,3 @@
-@Library('JenkinsLib') _
-
 def builtImage;
 pipeline{
     agent { label 'model_i' }
@@ -69,6 +67,7 @@ pipeline{
     }
     post { always {
         script {
+            library 'JenkinsLib'
             makeEnvAvailable()
         }
     }}
