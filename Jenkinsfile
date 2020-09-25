@@ -3,7 +3,10 @@
 def builtImage;
 pipeline{
     agent { label 'model_i' }
-    options {parallelsAlwaysFailFast() }
+    options {
+        parallelsAlwaysFailFast()
+        skipDefaultCheckout(true)
+    }
     parameters {
         booleanParam(name: 'QUICK_BUILD', defaultValue: false,
             description: 'Skip running git clean and perform a quick build' )
@@ -15,6 +18,11 @@ pipeline{
         PATH="/opt/cmake/bin:$PATH"
     }
     stages {
+        stage('Checkout') {
+            steps {
+                checkout(scm).each { k,v -> env.setProperty(k, v) }
+            }
+        }
         stage('Clean') {
             when { not {expression { return params.QUICK_BUILD } } }
             steps {
@@ -46,7 +54,7 @@ pipeline{
                 script {
                     withEnv(["FOO=newbar"]) {
                         bat 'set'
-                        echo currentBuild.buildVariables
+                        echo currentBuild.getBuildVariables().toString()
                     }
                 }
                 // Run in a custom docker
