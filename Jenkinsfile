@@ -5,7 +5,7 @@ pipeline{
     agent { label 'model_i' }
     options {
         parallelsAlwaysFailFast()
-        skipDefaultCheckout(true)
+        // skipDefaultCheckout(true)
     }
     parameters {
         booleanParam(name: 'QUICK_BUILD', defaultValue: false,
