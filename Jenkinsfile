@@ -27,7 +27,7 @@ pipeline{
                 ANOTHER_TEST = "not_env_set"
                 QUICK_BUILD = "not_actually_modifying_params"
                 env.GIT_COMMIT = env.GIT_COMMIT
-                makeEnvAvailable()
+                makeEnvAvailable(env)
 
                 docker.withRegistry("https://index.docker.io/", "dockerhub") {
                     // Build the image. It's probably already built, but just check
