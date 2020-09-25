@@ -20,7 +20,9 @@ pipeline{
     stages {
         stage('Checkout') {
             steps {
-                checkout(scm).each { k,v -> env.setProperty(k, v) }
+                script {
+                    checkout(scm).each { k,v -> env.setProperty(k, v) }
+                }
             }
         }
         stage('Clean') {
