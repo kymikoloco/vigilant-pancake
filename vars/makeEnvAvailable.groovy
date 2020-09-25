@@ -1,5 +1,5 @@
 
-def call(env) {
+def call() {
   // Ignore Jenkins/Hudson env vars
   env.getEnvironment().each { k,v -> if(!k.matches("^(JENKINS|HUDSON).*")) {env.setProperty(k, v) } }
   // Possible git env vars not available through getEnvironment for some reason
