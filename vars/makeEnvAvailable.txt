@@ -1,0 +1,1 @@
+When used in a downstream job, allows the upstream to view the env variables through `job.getBuildVariables()`
