@@ -45,7 +45,7 @@ pipeline{
             steps {
                 script {
                     withEnv(["FOO=newbar"]) {
-                        echo currentBuild.getBuildVariables()
+                        echo currentBuild.buildVariables
                     }
                 }
                 // Run in a custom docker
