@@ -1,0 +1,31 @@
+format_version: 10
+pipelines:
+  main-build:
+    group: My-Pipelines
+    label_template: ${COUNT}
+    lock_behavior: none
+    display_order: -1
+    materials:
+      vigilant-pancake-build:
+        git: https://github.com/kymikoloco/vigilant-pancake
+        username: kymikoloco
+        shallow_clone: false
+        auto_update: false
+        branch: gocd_test
+    stages:
+    - cmake:
+        fetch_materials: true
+        keep_artifacts: false
+        clean_workspace: false
+        approval:
+          type: success
+          allow_only_on_success: false
+        jobs:
+          configure:
+            timeout: 0
+            tasks:
+            - exec:
+                arguments:
+                - -la
+                command: ls
+                run_if: passed
