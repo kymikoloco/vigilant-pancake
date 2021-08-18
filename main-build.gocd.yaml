@@ -26,6 +26,6 @@ pipelines:
             tasks:
             - exec:
                 arguments:
-                - -la
-                command: ls
+                - --version
+                command: cmake
                 run_if: passed
